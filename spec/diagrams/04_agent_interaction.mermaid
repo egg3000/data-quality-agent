@@ -1,0 +1,35 @@
+sequenceDiagram
+    participant U as Analyst
+    participant FE as React Frontend
+    participant API as FastAPI Service
+    participant Agent as AI Agent (Claude)
+    participant Tools as Agent Tools
+    participant DB as PostgreSQL
+
+    U->>FE: Types message in chat interface
+    FE->>API: POST /chat {session_id, message}
+    API->>DB: Load conversation history for session
+    DB-->>API: Prior messages
+    API->>Agent: Send message + history + system prompt + tool definitions
+
+    loop Agent reasoning (multi-step tool use)
+        Agent->>Agent: Reason about next action
+
+        alt Needs data — use a tool
+            Agent->>Tools: Call tool (e.g. search_knowledge, get_error_summary)
+            Tools->>DB: Query or write
+            DB-->>Tools: Result
+            Tools-->>Agent: Tool result
+        else Ready to respond
+            Agent->>Agent: Compose final response
+        end
+    end
+
+    Agent->>DB: Save user message + assistant response to conversation_messages
+    opt Agent extracts business knowledge from the conversation
+        Agent->>DB: Write knowledge_entry + generate embedding (pgvector)
+    end
+
+    Agent-->>API: Response text
+    API-->>FE: {response, session_id}
+    FE-->>U: Display agent response in chat

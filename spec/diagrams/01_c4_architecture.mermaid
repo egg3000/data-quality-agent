@@ -1,0 +1,31 @@
+C4Container
+    title Data Quality Agent — System Architecture
+
+    Person(analyst, "Data Analyst", "Reviews data quality issues and interacts with the AI agent via chat")
+
+    System_Boundary(dqa, "Data Quality Agent (Docker)") {
+        Container(frontend, "Web Frontend", "React.js", "Dashboard showing rules, error trends, and summaries. Embedded chat interface for agent interaction.")
+        Container(api, "API & Agent Service", "FastAPI / Python", "Rules execution service, AI agent with tool use, REST API. Abstracts data source connection via env config.")
+        ContainerDb(postgres, "Application Database", "PostgreSQL 15 + pgvector", "Stores rules, rule runs, errors, summaries, knowledge base (with embeddings), and conversation history. Also holds mirrored ERP data in dev.")
+    }
+
+    System_Ext(erp, "ERP System", "Source of master data (e.g. SAP, Oracle, NetSuite). Mirrored into Postgres for local dev.")
+    System_Ext(redshift, "AWS Redshift", "Production data lake. Rules execute directly against this in production deployment.")
+    System_Ext(claude_api, "Claude API (Anthropic)", "LLM powering agent reasoning, tool use, and knowledge extraction.")
+
+    Rel(analyst, frontend, "Uses", "HTTPS")
+    Rel(frontend, api, "REST calls", "JSON/HTTPS")
+    Rel(api, postgres, "Reads / writes", "SQLAlchemy")
+    Rel(api, claude_api, "Agent reasoning & tool use", "HTTPS")
+    Rel(erp, postgres, "Mirrored to (dev)", "ETL / Replication")
+    Rel(api, redshift, "Rules execute against (prod)", "SQLAlchemy — parameterized via DATA_SOURCE_URL env var")
+
+    UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")
+
+    UpdateElementStyle(analyst, $bgColor="#08427B", $fontColor="#ffffff")
+    UpdateRelStyle(analyst, frontend, $textColor="#333333", $lineColor="#666666")
+    UpdateRelStyle(frontend, api, $textColor="#333333", $lineColor="#666666")
+    UpdateRelStyle(api, postgres, $textColor="#333333", $lineColor="#666666")
+    UpdateRelStyle(api, claude_api, $textColor="#333333", $lineColor="#666666")
+    UpdateRelStyle(erp, postgres, $textColor="#333333", $lineColor="#666666")
+    UpdateRelStyle(api, redshift, $textColor="#333333", $lineColor="#666666")

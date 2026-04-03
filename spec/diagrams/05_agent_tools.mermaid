@@ -1,0 +1,39 @@
+flowchart TD
+    Agent(["🤖 AI Agent"])
+
+    Agent --> RuleTools
+    Agent --> ErrorTools
+    Agent --> KnowledgeTools
+    Agent --> ConversationTools
+
+    subgraph RuleTools["Rule Management"]
+        T1["list_rules\nList all rules with metadata and status"]
+        T2["get_rule\nGet full SQL and details for a specific rule"]
+        T3["create_rule\nWrite a new rule — name, SQL, category, severity"]
+        T4["update_rule\nModify an existing rule's SQL or metadata"]
+        T5["run_rule\nExecute a specific rule immediately and return results"]
+        T6["run_all_rules\nTrigger a full rule execution batch"]
+    end
+
+    subgraph ErrorTools["Error & Summary Review"]
+        T7["get_error_summary\nGet error counts and trends for a rule or date range"]
+        T8["get_errors\nGet individual error records returned by a rule run"]
+        T9["get_run_history\nList past rule runs with status and counts"]
+    end
+
+    subgraph KnowledgeTools["Knowledge Base"]
+        T10["search_knowledge\nSemantic search of knowledge entries via pgvector"]
+        T11["write_knowledge\nSave a new knowledge entry with auto-generated embedding"]
+        T12["list_knowledge\nList knowledge entries by tag or source type"]
+    end
+
+    subgraph ConversationTools["Conversation Memory"]
+        T13["get_conversation_history\nRetrieve prior messages for the current session"]
+        T14["search_conversations\nSemantic search across past analyst conversations"]
+    end
+
+    RuleTools --> DB_Rules[("rules\nrule_runs")]
+    RuleTools --> DS[("Data Source\nPostgres / Redshift")]
+    ErrorTools --> DB_Errors[("rule_errors\nerror_summaries")]
+    KnowledgeTools --> DB_Knowledge[("knowledge_entries\n+ pgvector embeddings")]
+    ConversationTools --> DB_Conv[("conversations\nconversation_messages")]

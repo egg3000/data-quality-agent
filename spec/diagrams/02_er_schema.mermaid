@@ -1,0 +1,79 @@
+erDiagram
+
+    RULES {
+        uuid id PK
+        string name
+        string description
+        string category "completeness | validity | consistency | uniqueness | referential_integrity | timeliness | orphans | business_rules"
+        int severity "1=info | 2=warning | 3=error | 4=critical"
+        text sql_query
+        boolean is_active
+        string created_by
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    RULE_RUNS {
+        uuid id PK
+        uuid rule_id FK
+        string triggered_by "scheduler | user | agent"
+        string status "running | completed | failed"
+        int error_count
+        timestamp started_at
+        timestamp completed_at
+    }
+
+    RULE_ERRORS {
+        uuid id PK
+        uuid rule_id FK
+        uuid rule_run_id FK
+        jsonb error_data "raw record returned by rule SQL"
+        boolean is_resolved
+        timestamp detected_at
+        timestamp resolved_at
+    }
+
+    ERROR_SUMMARIES {
+        uuid id PK
+        uuid rule_id FK
+        date summary_date
+        int total_errors
+        int new_errors
+        int resolved_errors
+        jsonb metadata
+    }
+
+    KNOWLEDGE_ENTRIES {
+        uuid id PK
+        string title
+        text content
+        string source_type "agent | analyst | rule | conversation"
+        uuid source_id "optional — links to rule or conversation"
+        vector embedding "pgvector — for semantic search"
+        string[] tags
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    CONVERSATIONS {
+        uuid id PK
+        string session_id
+        string analyst_id
+        timestamp started_at
+        timestamp last_active_at
+    }
+
+    CONVERSATION_MESSAGES {
+        uuid id PK
+        uuid conversation_id FK
+        string role "user | assistant | tool"
+        text content
+        jsonb tool_calls "tool name + args + result if role=tool"
+        timestamp created_at
+    }
+
+    RULES ||--o{ RULE_RUNS : "executed as"
+    RULE_RUNS ||--o{ RULE_ERRORS : "produces"
+    RULES ||--o{ RULE_ERRORS : "identifies"
+    RULES ||--o{ ERROR_SUMMARIES : "summarized in"
+    CONVERSATIONS ||--o{ CONVERSATION_MESSAGES : "contains"

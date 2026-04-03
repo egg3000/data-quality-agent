@@ -1,0 +1,30 @@
+sequenceDiagram
+    participant S as Scheduler / User / Agent
+    participant API as FastAPI Service
+    participant RE as Rules Executor
+    participant DS as Data Source<br/>(Postgres dev · Redshift prod)
+    participant DB as App Database<br/>(PostgreSQL)
+    participant Agent as AI Agent<br/>(Claude)
+
+    S->>API: Trigger rule run (all active rules, or specific rule id)
+    API->>DB: Load active rules
+    DB-->>API: Rules list
+
+    loop For each rule
+        API->>RE: Execute rule
+        RE->>DS: Run rule SQL query
+        DS-->>RE: Result rows (each row = one data error)
+        RE->>DB: Insert rule_run record (status, count)
+        RE->>DB: Insert rule_error records (jsonb row data)
+    end
+
+    API->>Agent: Request post-run analysis
+    Agent->>DB: Query error counts, trends, prior summaries
+    DB-->>Agent: Error data
+    Agent->>DB: Upsert error_summary records (per rule, per date)
+
+    opt Agent detects notable pattern or anomaly
+        Agent->>DB: Write knowledge_entry (title, content, embedding)
+    end
+
+    API-->>S: Run complete — summary stats returned
