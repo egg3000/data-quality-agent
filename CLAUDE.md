@@ -151,11 +151,13 @@ There is no scheduled job runner in local development. Rules are triggered manua
 |---|---|---|
 | `APP_DB_URL` | Yes | PostgreSQL connection for DQA app tables |
 | `DATA_SOURCE_URL` | Yes | Connection for rule SQL execution (ERP data) |
-| `MODEL_PROVIDER` | No | LLM provider — `anthropic` (default) or `openai` |
+| `MODEL_PROVIDER` | No | LLM provider — `anthropic` (default), `openai`, or `databricks` |
 | `MODEL_NAME` | No | Model name — defaults to `claude-opus-4-6` |
-| `EMBEDDINGS_PROVIDER` | No | Embeddings provider — `local` (default, uses fastembed) or `openai` |
+| `EMBEDDINGS_PROVIDER` | No | Embeddings provider — `local` (default, uses fastembed), `openai`, or `databricks` |
 | `ANTHROPIC_API_KEY` | No | Required when `MODEL_PROVIDER=anthropic` |
 | `OPENAI_API_KEY` | No | Required when `MODEL_PROVIDER=openai` or `EMBEDDINGS_PROVIDER=openai` |
+| `DATABRICKS_HOST` | No | Databricks workspace URL (e.g. `https://adb-xxxx.azuredatabricks.net`) |
+| `DATABRICKS_TOKEN` | No | Databricks PAT or OAuth token — required when provider is `databricks` |
 | `ENV` | No | `development` or `production` — controls test data loading |
 
 ---
